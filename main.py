@@ -23,7 +23,7 @@ scope = [
     'https://spreadsheets.google.com/feeds',
     'https://www.googleapis.com/auth/drive'
 ]
-creds = ServiceAccountCredentials.from_json_keyfile_name(KEY_PATH, scope)
+creds = service_account.Credentials.from_json_keyfile_name("bot-key.json", scope)
 client = gspread.authorize(creds)
 
 # === Команда /start ===
