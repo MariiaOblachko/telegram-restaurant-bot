@@ -196,5 +196,22 @@ def run_scheduler():
         time.sleep(60)
 threading.Thread(target=run_scheduler).start()
 
-# Старт бота
-bot.polling()
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route(f"/{TOKEN}", methods=["POST"])
+def receive_update():
+    update = telebot.types.Update.de_json(request.data.decode("utf-8"))
+    bot.process_new_updates([update])
+    return "OK", 200
+
+@app.route("/", methods=["GET"])
+def index():
+    return "Бот работает", 200
+
+if __name__ == "__main__":
+    bot.remove_webhook()
+    bot.set_webhook(url=f"https://{os.environ['RENDER_EXTERNAL_HOSTNAME']}/{TOKEN}")
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
