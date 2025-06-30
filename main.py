@@ -95,6 +95,23 @@ def show_week_schedule(message):
     shifts = df[df['Имя сотрудника'] == name]
     shifts = shifts[shifts['Дата'].astype(str).str[:5].isin(week_dates)]
 
+    # 🔍 Отладочные принты
+    print(f"Telegram ID: {tg_id}")
+    print(f"Найдено имя: {name}")
+    print("Даты недели:", week_dates)
+    print("Все смены по сотруднику:")
+    print(shifts)
+
+    # Ответ пользователю
+    if shifts.empty:
+        bot.send_message(message.chat.id, "📭 У тебя нет смен на ближайшую неделю.")
+    else:
+        text = "📅 Твои смены на неделю:\n\n"
+        for _, row in shifts.iterrows():
+            text += f"📆 {row['Дата']} — {row['Заведение']}, {row['Должность']} ({row['Время смены']})\n"
+        bot.send_message(message.chat.id, text)
+
+
     if shifts.empty:
         bot.send_message(message.chat.id, "📭 У тебя нет смен на ближайшую неделю.")
     else:
