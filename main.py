@@ -92,8 +92,8 @@ def show_week_schedule(message):
     today = datetime.now()
     week_dates = [(today + timedelta(days=i)).strftime('%d.%m') for i in range(7)]
     df = pd.DataFrame(schedule_data)
-df['Дата'] = df['Дата'].astype(str).str[:5]  # нормализуем даты до формата дд.мм
-shifts = df[(df['Имя сотрудника'] == name) & (df['Дата'].isin(week_dates))]
+    df['Дата'] = df['Дата'].astype(str).str[:5]  # нормализуем даты до формата дд.мм
+    shifts = df[(df['Имя сотрудника'] == name) & (df['Дата'].isin(week_dates))]
 
 
     # 🔍 Отладочные принты
