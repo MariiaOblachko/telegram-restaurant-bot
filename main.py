@@ -52,11 +52,17 @@ update_cache()
 # === Автоматическое обновление каждые 5 минут ===
 schedule.every(5).minutes.do(update_cache)
 
-# === Команда /start ===
 @bot.message_handler(commands=['start'])
 def start_auth(message):
     tg_id = str(message.from_user.id)
-  
+    args = message.text.split()
+
+    # 🎯 Если чек-ин по ссылке
+    if len(args) > 1 and args[1] == 'checkin':
+        handle_checkin(message)
+        return
+
+    # 🎫 Обычная авторизация
     for row in staff_data:
         if str(row['Телеграм ID']).strip() == tg_id:
             name = row['Имя сотрудника']
@@ -67,10 +73,49 @@ def start_auth(message):
             return
     bot.send_message(message.chat.id, "❌ Доступ запрещён. Сообщите свой Telegram ID управляющему.")
 
+
 # === /getid команда ===
 @bot.message_handler(commands=['getid'])
 def send_user_id(message):
     bot.reply_to(message, f"Ваш Telegram ID: {message.from_user.id}\nСообщите его управляющему для доступа к боту.")
+
+# === 💡 Новая функция: обработка чек-ина ===
+def handle_checkin(message):
+    tg_id = str(message.from_user.id)
+    now = datetime.now()
+    today_str = now.strftime('%d.%m')
+    time_str = now.strftime('%H:%M')
+
+    # Поиск сотрудника по Telegram ID
+    user = next((row for row in staff_data if str(row['Телеграм ID']).strip() == tg_id), None)
+    if not user:
+        bot.send_message(message.chat.id, "❌ Вы не зарегистрированы в системе.")
+        return
+
+    name = user['Имя сотрудника']
+
+    try:
+        spreadsheet = client.open("График сотрудников")
+        sheet = spreadsheet.worksheet("Чек-ины")
+
+        # Опоздание: если позже 11:00
+        late = now.hour > 11 or (now.hour == 11 and now.minute > 0)
+        status = "✅ Вовремя" if not late else "❌ Опоздание"
+
+        row = [today_str, time_str, name, tg_id, status]
+        sheet.append_row(row, value_input_option='USER_ENTERED')
+
+        if late:
+            last_row = len(sheet.get_all_values())
+            sheet.format(f'E{last_row}', {
+                "backgroundColor": {"red": 1, "green": 0.8, "blue": 0.8}
+            })
+
+        bot.send_message(message.chat.id, f"📍 Отметка получена: {time_str}\n{name}, спасибо!")
+    except Exception as e:
+        print(f"❗ Ошибка при чек-ине: {e}")
+        bot.send_message(message.chat.id, "⚠️ Не удалось записать чек-ин.")
+
 
 # === Меню кнопок ===
 @bot.message_handler(commands=['menu'])
