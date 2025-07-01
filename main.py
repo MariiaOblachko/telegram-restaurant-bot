@@ -95,16 +95,17 @@ def show_week_schedule(message):
     today = datetime.now()
     week_dates = [(today + timedelta(days=i)).strftime('%d.%m') for i in range(7)]
     df = pd.DataFrame(schedule_data)
-    df['Дата'] = df['Дата'].astype(str).str[:5]
+    df['Дата'] = df['Дата'].astype(str).str[:5]  # нормализуем даты до формата дд.мм
     shifts = df[(df['Имя сотрудника'] == name) & (df['Дата'].isin(week_dates))]
 
-    # 🔍 Отладочные принты (внутри функции!)
+    # 🔍 Отладочные принты
     print(f"Telegram ID: {tg_id}")
     print(f"Найдено имя: {name}")
     print("Даты недели:", week_dates)
     print("Все смены по сотруднику:")
     print(shifts)
 
+    # Ответ пользователю
     if shifts.empty:
         bot.send_message(message.chat.id, "📭 У тебя нет смен на ближайшую неделю.")
     else:
