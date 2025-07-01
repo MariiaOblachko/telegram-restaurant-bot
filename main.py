@@ -15,7 +15,7 @@ matplotlib.use('Agg')  # отключаем GUI backend, чтобы не был�
 from io import BytesIO
 
 # === Настройки ===
-TOKEN = os.getenv("BOT_TOKEN", "вставь_сюда_свой_токен_если_нужно")
+TOKEN = os.getenv("BOT_TOKEN", "7575822751:AAFH-T5Ik-A5rjIqeWYPH4vspETCSfJyEpA")
 bot = telebot.TeleBot(TOKEN)
 
 # === Доступ к Google Sheets через переменную окружения GOOGLE_KEY ===
@@ -216,7 +216,7 @@ threading.Thread(target=run_scheduler).start()
 
 from flask import Flask, request
 
-TOKEN = "6578158267:AAHd_3jY4MFLmJhklFddtCKHzAjAHCr_H9E"  # ← твой токен напрямую
+TOKEN = "7575822751:AAFH-T5Ik-A5rjIqeWYPH4vspETCSfJyEpA"  # ← твой токен напрямую
 
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
