@@ -40,8 +40,11 @@ def update_cache():
         staff_data = spreadsheet.worksheet("Сотрудники").get_all_records()
         schedule_data = spreadsheet.worksheet("График").get_all_records()
         print("🔄 Данные успешно обновлены из Google Sheets.")
+        print("👥 Сотрудники:", staff_data)
+        print("📋 График:", schedule_data)
     except Exception as e:
         print(f"⚠️ Ошибка при обновлении данных: {e}")
+
 
 # === Первичная загрузка данных при запуске ===
 update_cache()
