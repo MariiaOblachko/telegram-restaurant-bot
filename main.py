@@ -100,7 +100,19 @@ def show_week_schedule(message):
     # Нормализуем имена и даты
     df['Имя сотрудника'] = df['Имя сотрудника'].astype(str).str.strip().str.lower()
     df['Дата'] = df['Дата'].astype(str).str.strip()
-    df['Дата'] = df['Дата'].apply(lambda x: x.zfill(5) if '.' in x else x)
+    df['Дата'] = df['Дата'].apply(lambda x: x.zfill(5) if '.' in x else x)def normalize_date(d):
+    try:
+        parts = d.strip().split(".")
+        if len(parts) == 2:
+            day, month = parts
+            return f"{int(day):02d}.{int(month):02d}"
+        else:
+            return d
+    except:
+        return d  # если что-то пойдёт не так — оставим как есть
+
+    df['Дата'] = df['Дата'].astype(str).apply(normalize_date)
+
 
     name_normalized = name.strip().lower()
     shifts = df[(df['Имя сотрудника'] == name_normalized) & (df['Дата'].isin(week_dates))]
