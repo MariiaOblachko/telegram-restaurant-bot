@@ -15,7 +15,7 @@ matplotlib.use('Agg')  # отключаем GUI backend, чтобы не был�
 from io import BytesIO
 
 # === Настройки ===
-TOKEN = os.getenv("7575822751:AAFH-T5Ik-A5rjIqeWYPH4vspETCSfJyEpA")
+TOKEN = "7575822751:AAFH-T5Ik-A5rjIqeWYPH4vspETCSfJyEpA"
 bot = telebot.TeleBot(TOKEN)
 
 # === Доступ к Google Sheets через переменную окружения GOOGLE_KEY ===
@@ -205,11 +205,24 @@ def run_scheduler():
         time.sleep(60)
 threading.Thread(target=run_scheduler).start()
 
-import os
-import json
-from google.oauth2 import service_account
-import telebot
-...
+from flask import Flask, request
 
-# === Настройки ===
+app = Flask(__name__)
 
+@app.route(f"/{TOKEN}", methods=["POST"])
+def receive_update():
+    print("✅ Получен апдейт от Telegram")
+    update = telebot.types.Update.de_json(request.data.decode("utf-8"))
+    bot.process_new_updates([update])
+    return "OK", 200
+
+@app.route("/", methods=["GET"])
+def index():
+    return "Бот работает", 200
+
+if __name__ == "__main__":
+    bot.remove_webhook()
+    webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}"
+    print("Установка вебхука:", webhook_url)
+    bot.set_webhook(url=webhook_url)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
