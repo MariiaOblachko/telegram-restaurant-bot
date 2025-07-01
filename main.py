@@ -55,10 +55,13 @@ schedule.every(5).minutes.do(update_cache)
 @bot.message_handler(commands=['start'])
 def start_auth(message):
     tg_id = str(message.from_user.id)
-    args = message.text.split()
 
-    # 🎯 Если чек-ин по ссылке
-    if len(args) > 1 and args[1] == 'checkin':
+    # 💡 Получаем аргументы после /start
+    args = message.text.split(maxsplit=1)
+    param = args[1] if len(args) > 1 else None
+
+    # 🎯 Если это чек-ин по ссылке
+    if param == 'checkin':
         handle_checkin(message)
         return
 
@@ -72,6 +75,7 @@ def start_auth(message):
             bot.send_message(message.chat.id, f"✅ Добро пожаловать, {name}!", reply_markup=markup)
             return
     bot.send_message(message.chat.id, "❌ Доступ запрещён. Сообщите свой Telegram ID управляющему.")
+
 
 
 # === /getid команда ===
