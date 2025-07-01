@@ -216,6 +216,9 @@ threading.Thread(target=run_scheduler).start()
 
 from flask import Flask, request
 
+TOKEN = "6578158267:AAHd_3jY4MFLmJhklFddtCKHzAjAHCr_H9E"  # ← твой токен напрямую
+
+bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
 @app.route(f"/{TOKEN}", methods=["POST"])
@@ -230,6 +233,7 @@ def index():
 
 if __name__ == "__main__":
     bot.remove_webhook()
-    bot.set_webhook(url=f"https://{os.environ['RENDER_EXTERNAL_HOSTNAME']}/{TOKEN}")
+    webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}"
+    print("Установка вебхука:", webhook_url)
+    bot.set_webhook(url=webhook_url)
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-
