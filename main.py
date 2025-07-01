@@ -71,7 +71,7 @@ def send_user_id(message):
 
 # === Меню кнопок ===
 @bot.message_handler(commands=['menu'])
-def show_menu(message):
+def _menu(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton("📅 Мои смены на неделю"),
                types.KeyboardButton("📋 Общее расписание"))
@@ -81,6 +81,12 @@ def show_menu(message):
 @bot.message_handler(func=lambda msg: msg.text == "📅 Мои смены на неделю")
 def show_week_schedule(message):
     tg_id = str(message.from_user.id)
+print(f"Telegram ID: {tg_id}")
+print(f"Найдено имя: {name}")
+print("Даты недели:", week_dates)
+print("Все смены по сотруднику:")
+print(shifts)
+
 
     # Поиск сотрудника
     name = next((row['Имя сотрудника'] for row in staff_data if str(row['Телеграм ID']).strip() == tg_id), None)
