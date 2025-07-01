@@ -94,19 +94,17 @@ def show_week_schedule(message):
     # Формируем список смен на неделю
     today = datetime.now()
     week_dates = [(today + timedelta(days=i)).strftime('%d.%m') for i in range(7)]
-    df = pd.DataFrame(schedule_data)
-        # Формируем список смен на неделю
-    today = datetime.now()
-    week_dates = [(today + timedelta(days=i)).strftime('%d.%m') for i in range(7)]
 
     df = pd.DataFrame(schedule_data)
 
-    # Нормализуем имя и дату
+    # Нормализуем имена и даты
     df['Имя сотрудника'] = df['Имя сотрудника'].astype(str).str.strip().str.lower()
-    df['Дата'] = df['Дата'].astype(str).str.strip().str[:5]
+    df['Дата'] = df['Дата'].astype(str).str.strip()
+    df['Дата'] = df['Дата'].apply(lambda x: x.zfill(5) if '.' in x else x)
 
     name_normalized = name.strip().lower()
     shifts = df[(df['Имя сотрудника'] == name_normalized) & (df['Дата'].isin(week_dates))]
+
 
 
     # 🔍 Отладочные принты
