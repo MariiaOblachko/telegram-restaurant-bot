@@ -55,17 +55,16 @@ schedule.every(5).minutes.do(update_cache)
 @bot.message_handler(commands=['start'])
 def start_auth(message):
     print("🧪 Вызван /start")
-    print("📩 Весь message.json:", message.json)
+    print("📩 Текст команды:", message.text)
+
     tg_id = str(message.from_user.id)
 
-    # ✅ Правильный способ получить start-параметр из ссылки
-    try:
-        param = message.json.get('start_param')  # именно так приходят аргументы из deep-link
-    except:
-        param = None
+    # ✅ Аргументы после /start
+    args = message.text.split(maxsplit=1)
+    param = args[1] if len(args) > 1 else None
 
-    # 🎯 Если это чек-ин по ссылке
-    if param == 'checkin':
+    # 🎯 Если это чек-ин
+    if param and param.startswith('checkin'):
         handle_checkin(message)
         return
 
@@ -78,7 +77,9 @@ def start_auth(message):
                        types.KeyboardButton("📋 Общее расписание"))
             bot.send_message(message.chat.id, f"✅ Добро пожаловать, {name}!", reply_markup=markup)
             return
+
     bot.send_message(message.chat.id, "❌ Доступ запрещён. Сообщите свой Telegram ID управляющему.")
+
 
 
 
