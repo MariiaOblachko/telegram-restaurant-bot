@@ -69,6 +69,7 @@ def start_auth(message):
     # ✅ Если deep-link с чек-ином
     if param and 'checkin' in param.lower():
         handle_checkin(message)
+        print("📥 Вызван handle_checkin()")
         return
 
     # 🎫 Обычная авторизация
