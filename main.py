@@ -53,7 +53,6 @@ update_cache()
 schedule.every(5).minutes.do(update_cache)
 
 @bot.message_handler(commands=['start'])
-@bot.message_handler(commands=['start'])
 def start_auth(message):
     print("🧪 Вызван /start")
     print("📩 Весь message.json:", message.json)
