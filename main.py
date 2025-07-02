@@ -56,26 +56,39 @@ schedule.every(5).minutes.do(update_cache)
 def start_auth(message):
     tg_id = str(message.from_user.id)
 
-    # ✅ Сначала пробуем получить start_param через Telegram deep linking
+    # Пытаемся достать параметр
     param = message.json.get('start_param')
-
-    # 🔄 Если параметр пустой — пробуем достать вручную из текста
     if not param:
         args = message.text.split(maxsplit=1)
         param = args[1] if len(args) > 1 else None
 
     print(f"💬 /start получен от {tg_id}, param: {param}")
 
-    # ✅ Если deep-link с чек-ином
+    # === 👇 Добавь эти блоки сверху и с return ===
     if param and 'checkout' in param.lower():
-        handle_checkout(message)
         print("📤 Вызван handle_checkout()")
+        handle_checkout(message)
         return
 
-    elif param and 'checkin' in param.lower():
-        handle_checkin(message)
+    if param and 'checkin' in param.lower():
         print("📥 Вызван handle_checkin()")
+        handle_checkin(message)
         return
+
+    # === Только если это не deep-link, продолжаем авторизацию ===
+    for row in staff_data:
+        if str(row['Телеграм ID']).strip() == tg_id:
+            name = row['Имя сотрудника']
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            markup.add(types.KeyboardButton("📅 Мои смены на неделю"),
+                       types.KeyboardButton("📋 Общее расписание"))
+            bot.send_message(message.chat.id, f"✅ Добро пожаловать, {name}!", reply_markup=markup)
+            return
+
+
+    # Если никто не найден
+    bot.send_message(message.chat.id, "❌ Доступ запрещён. Сообщите свой Telegram ID управляющему.")
+
     #чекаут
     #чекаут
     def handle_checkout(message):
