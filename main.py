@@ -70,7 +70,8 @@ def start_auth(message):
     if param and 'checkin' in param.lower():
         handle_checkin(message)
         print("📥 Вызван handle_checkin()")
-        return
+        return  # ← этот return должен быть внутри блока if, с тем же отступом
+
 
     # 🎫 Обычная авторизация
     for row in staff_data:
