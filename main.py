@@ -78,10 +78,10 @@ def start_auth(message):
         return
     #чекаут
     def handle_checkout(message):
-    tg_id = str(message.from_user.id)
-    now = datetime.now()
-    time_str = now.strftime('%H:%M')
-
+        tg_id = str(message.from_user.id)
+        now = datetime.now()
+        time_str = now.strftime('%H:%M')
+    
     # Найдём пользователя
     user = next((row for row in staff_data if str(row['Телеграм ID']).strip() == tg_id), None)
     if not user:
