@@ -76,6 +76,49 @@ def start_auth(message):
         handle_checkin(message)
         print("📥 Вызван handle_checkin()")
         return
+    #чекаут
+    def handle_checkout(message):
+    tg_id = str(message.from_user.id)
+    now = datetime.now()
+    time_str = now.strftime('%H:%M')
+
+    # Найдём пользователя
+    user = next((row for row in staff_data if str(row['Телеграм ID']).strip() == tg_id), None)
+    if not user:
+        bot.send_message(message.chat.id, "❌ Вы не зарегистрированы в системе.")
+        return
+
+    name = user['Имя сотрудника']
+
+    try:
+        spreadsheet = client.open("График сотрудников")
+        sheet = spreadsheet.worksheet("Чек-ины")
+        values = sheet.get_all_values()
+
+        # Ищем последнюю строку для текущего сотрудника и сегодняшней даты
+        today_str = now.strftime('%d.%m')
+        target_row_index = None
+        for i in range(len(values) - 1, 0, -1):
+            if (
+                len(values[i]) >= 4 and
+                values[i][0].strip() == today_str and
+                values[i][3].strip() == tg_id and
+                (len(values[i]) < 7 or not values[i][6].strip())  # Пустая колонка "Время выхода"
+            ):
+                target_row_index = i + 1  # gspread индекс с 1
+                break
+
+        if not target_row_index:
+            bot.send_message(message.chat.id, "⚠️ Не найден чек-ин для выхода.")
+            return
+
+        sheet.update_cell(target_row_index, 7, time_str)  # G колонка — Время выхода
+
+        bot.send_message(message.chat.id, f"👋 До свидания, {name}!\nЧек-аут: {time_str}")
+        print(f"✅ Чек-аут записан для {name}, строка {target_row_index}")
+    except Exception as e:
+        print(f"❗ Ошибка при чек-ауте: {e}")
+        bot.send_message(message.chat.id, "⚠️ Не удалось записать чек-аут.")
 
 
     # 🎫 Обычная авторизация
