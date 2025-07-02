@@ -54,17 +54,20 @@ schedule.every(5).minutes.do(update_cache)
 
 @bot.message_handler(commands=['start'])
 def start_auth(message):
-    print("🧪 Вызван /start")
-    print("📩 Текст команды:", message.text)
-
     tg_id = str(message.from_user.id)
 
-    # ✅ Аргументы после /start
-    args = message.text.split(maxsplit=1)
-    param = args[1] if len(args) > 1 else None
+    # ✅ Сначала пробуем получить start_param через Telegram deep linking
+    param = message.json.get('start_param')
 
-    # 🎯 Если это чек-ин
-    if param and param.startswith('checkin'):
+    # 🔄 Если параметр пустой — пробуем достать вручную из текста
+    if not param:
+        args = message.text.split(maxsplit=1)
+        param = args[1] if len(args) > 1 else None
+
+    print(f"💬 /start получен от {tg_id}, param: {param}")
+
+    # ✅ Если deep-link с чек-ином
+    if param and 'checkin' in param.lower():
         handle_checkin(message)
         return
 
@@ -79,6 +82,7 @@ def start_auth(message):
             return
 
     bot.send_message(message.chat.id, "❌ Доступ запрещён. Сообщите свой Telegram ID управляющему.")
+
 
 
 
