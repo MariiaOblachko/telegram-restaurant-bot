@@ -71,7 +71,12 @@ def start_auth(message):
         handle_checkin(message)
         print("📥 Вызван handle_checkin()")
         return  # ← этот return должен быть внутри блока if, с тем же отступом
-
+        
+    # ✅ Если deep-link с чек-аутом
+    if param and 'checkout' in param.lower():
+        handle_checkout(message)
+        print("📤 Вызван handle_checkout()")
+        return
 
     # 🎫 Обычная авторизация
     for row in staff_data:
