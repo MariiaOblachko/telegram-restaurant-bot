@@ -89,34 +89,34 @@ def start_auth(message):
     # Если никто не найден
     bot.send_message(message.chat.id, "❌ Доступ запрещён. Сообщите свой Telegram ID управляющему.")
 
-    #чекаут
-    #чекаут
-    def handle_checkout(message):
-        print("🔁 handle_checkout() вызван")
 
-        tg_id = str(message.from_user.id)
-        now = datetime.now()
-        time_str = now.strftime('%H:%M')
+    #чекаут
+def handle_checkout(message):
+    print("🔁 handle_checkout() вызван")
+
+    tg_id = str(message.from_user.id)
+    now = datetime.now()
+    time_str = now.strftime('%H:%M')
 
     # Найдём пользователя
-        user = next((row for row in staff_data if str(row['Телеграм ID']).strip() == tg_id), None)
-        if not user:
-            bot.send_message(message.chat.id, "❌ Вы не зарегистрированы в системе.")
-            return
+    user = next((row for row in staff_data if str(row['Телеграм ID']).strip() == tg_id), None)
+    if not user:
+        bot.send_message(message.chat.id, "❌ Вы не зарегистрированы в системе.")
+        return
 
-        name = user['Имя сотрудника']
+    name = user['Имя сотрудника']
 
-        try:
-            spreadsheet = client.open("График сотрудников")
-            sheet = spreadsheet.worksheet("Чек-ины")
-            values = sheet.get_all_values()
-            print("📋 Последние строки в 'Чек-ины':", values[-5:])  # 👈 теперь можно
+    try:
+        spreadsheet = client.open("График сотрудников")
+        sheet = spreadsheet.worksheet("Чек-ины")
+        values = sheet.get_all_values()
+        print("📋 Последние строки в 'Чек-ины':", values[-5:])  # 👈 теперь можно
 
         # 🧠 остальной код поиска строки и записи чекаута ниже
 
-        except Exception as e:
-            print(f"❗ Ошибка при чекауте: {e}")
-            bot.send_message(message.chat.id, "⚠️ Не удалось записать чек-аут.")
+    except Exception as e:
+        print(f"❗ Ошибка при чекауте: {e}")
+        bot.send_message(message.chat.id, "⚠️ Не удалось записать чек-аут.")
 
 
         # Ищем последнюю строку для текущего сотрудника и сегодняшней даты
@@ -137,9 +137,9 @@ def start_auth(message):
             return
 
         sheet.update_cell(target_row_index, 7, time_str)  # G колонка — Время выхода
-
         bot.send_message(message.chat.id, f"👋 До свидания, {name}!\nЧек-аут: {time_str}")
         print(f"✅ Чек-аут записан для {name}, строка {target_row_index}")
+    
     except Exception as e:
         print(f"❗ Ошибка при чек-ауте: {e}")
         bot.send_message(message.chat.id, "⚠️ Не удалось записать чек-аут.")
