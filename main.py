@@ -87,10 +87,6 @@ def start_auth(message):
 
 
 
-    # Если никто не найден
-    bot.send_message(message.chat.id, "❌ Доступ запрещён. Сообщите свой Telegram ID управляющему.")
-
-
     #чекаут
 def handle_checkout(message):
     print("🔁 handle_checkout() вызван")
