@@ -73,17 +73,7 @@ def start_auth(message):
         return
 
     # Если это обычный /start без параметров — авторизация
-    for row in staff_data:
-        if str(row['Телеграм ID']).strip() == tg_id:
-            name = row['Имя сотрудника']
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            markup.add(types.KeyboardButton("📅 Мои смены на неделю"),
-                       types.KeyboardButton("📋 Общее расписание"))
-            bot.send_message(message.chat.id, f"✅ Добро пожаловать, {name}!", reply_markup=markup)
-            return
-
-    # Если не найден
-    bot.send_message(message.chat.id, "❌ Доступ запрещён. Сообщите свой Telegram ID управляющему.")
+    
 
 
 
@@ -128,7 +118,28 @@ def handle_checkout(message):
             return
 
         sheet.update_cell(target_row_index, 7, time_str)  # G колонка
-        bot.send_message(message.chat.id, f"👋 До свидания, {name}!\nЧек-аут: {time_str}")
+# Сравниваем с окончанием смены
+# Найдём запись в расписании
+today_str = now.strftime('%d.%m')
+user_schedule = next((row for row in schedule_data if row['Имя сотрудника'].strip().lower() == name.strip().lower() and row['Дата'].strip() == today_str), None)
+
+if user_schedule:
+    end_time_str = str(user_schedule.get("Время смены", "")).split("-")[-1].strip()
+    try:
+        planned_end = datetime.strptime(end_time_str, "%H:%M").replace(year=now.year, month=now.month, day=now.day)
+        diff = (now - planned_end).total_seconds() // 60
+        if diff > 0:
+            status = f"⏰ Вышел позже на {int(diff)} мин."
+        elif diff < 0:
+            status = f"⏳ Вышел раньше на {abs(int(diff))} мин."
+        else:
+            status = "✅ Вышел вовремя."
+    except:
+        status = "⚠️ Время окончания смены указано неверно."
+else:
+    status = "❓ Не найдено время смены."
+
+bot.send_message(message.chat.id, f"👋 До свидания, {name}!\nЧек-аут: {time_str}\n{status}")
         print(f"✅ Чек-аут записан для {name}, строка {target_row_index}")
 
     except Exception as e:
@@ -163,6 +174,8 @@ def send_user_id(message):
 def handle_checkin(message):
     tg_id = str(message.from_user.id)
     now = datetime.now()
+    planned_start = now.replace(hour=11, minute=0, second=0, microsecond=0)
+delay = now - planned_start
     today_str = now.strftime('%d.%m')
     time_str = now.strftime('%H:%M')
 
@@ -179,8 +192,13 @@ def handle_checkin(message):
         sheet = spreadsheet.worksheet("Чек-ины")
 
         # Опоздание: если позже 11:00
-        late = now.hour > 11 or (now.hour == 11 and now.minute > 0)
-        status = "✅ Вовремя" if not late else "❌ Опоздание"
+        late = delay.total_seconds() > 0
+        if late:
+            mins = int(delay.total_seconds() // 60)
+            status = f"❌ Опоздание на {mins} мин."
+        else:
+            status = "✅ Вовремя"
+
 
         row = [today_str, time_str, name, tg_id, status]
         sheet.append_row(row, value_input_option='USER_ENTERED')
@@ -191,7 +209,7 @@ def handle_checkin(message):
                 "backgroundColor": {"red": 1, "green": 0.8, "blue": 0.8}
             })
 
-        bot.send_message(message.chat.id, f"📍 Отметка получена: {time_str}\n{name}, спасибо!")
+        bot.send_message(message.chat.id, f"📍 Отметка получена: {time_str}\n{name}, спасибо!\n{status}")
     except Exception as e:
         print(f"❗ Ошибка при чек-ине: {e}")
         bot.send_message(message.chat.id, "⚠️ Не удалось записать чек-ин.")
