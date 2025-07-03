@@ -105,7 +105,7 @@ def handle_checkout(message):
 
         # 🧠 остальной код поиска строки и записи чекаута ниже
 
-       try:
+    try:
         spreadsheet = client.open("График сотрудников")
         sheet = spreadsheet.worksheet("Чек-ины")
         values = sheet.get_all_values()
