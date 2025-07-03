@@ -103,20 +103,14 @@ def handle_checkout(message):
 
     name = user['Имя сотрудника']
 
-    try:
+        # 🧠 остальной код поиска строки и записи чекаута ниже
+
+       try:
         spreadsheet = client.open("График сотрудников")
         sheet = spreadsheet.worksheet("Чек-ины")
         values = sheet.get_all_values()
-        print("📋 Последние строки в 'Чек-ины':", values[-5:])  # 👈 теперь можно
+        print("📋 Последние строки в 'Чек-ины':", values[-5:])
 
-        # 🧠 остальной код поиска строки и записи чекаута ниже
-
-    except Exception as e:
-        print(f"❗ Ошибка при чекауте: {e}")
-        bot.send_message(message.chat.id, "⚠️ Не удалось записать чек-аут.")
-
-
-        # Ищем последнюю строку для текущего сотрудника и сегодняшней даты
         today_str = now.strftime('%d.%m')
         target_row_index = None
         for i in range(len(values) - 1, 0, -1):
@@ -124,22 +118,24 @@ def handle_checkout(message):
                 len(values[i]) >= 4 and
                 values[i][0].strip() == today_str and
                 values[i][3].strip() == tg_id and
-                (len(values[i]) < 7 or not values[i][6].strip())  # Пустая колонка "Время выхода"
+                (len(values[i]) < 7 or not values[i][6].strip())
             ):
-                target_row_index = i + 1  # gspread индекс с 1
+                target_row_index = i + 1
                 break
 
         if not target_row_index:
             bot.send_message(message.chat.id, "⚠️ Не найден чек-ин для выхода.")
             return
 
-        sheet.update_cell(target_row_index, 7, time_str)  # G колонка — Время выхода
+        sheet.update_cell(target_row_index, 7, time_str)  # G колонка
         bot.send_message(message.chat.id, f"👋 До свидания, {name}!\nЧек-аут: {time_str}")
         print(f"✅ Чек-аут записан для {name}, строка {target_row_index}")
-    
+
     except Exception as e:
-        print(f"❗ Ошибка при чек-ауте: {e}")
+        print(f"❗ Ошибка при чекауте: {e}")
         bot.send_message(message.chat.id, "⚠️ Не удалось записать чек-аут.")
+
+    
 
 
     # 🎫 Обычная авторизация
@@ -226,37 +222,31 @@ def show_week_schedule(message):
 
     df = pd.DataFrame(schedule_data)
 
-    # Нормализуем имена и даты
+    # === Сначала определяем нормализатор даты ===
+    def normalize_date(d):
+        try:
+            parts = d.strip().split(".")
+            if len(parts) == 2:
+                day, month = parts
+                return f"{int(day):02d}.{int(month):02d}"
+            else:
+                return d
+        except:
+            return d  # если что-то пойдёт не так — оставим как есть
+
+    # === Применяем нормализацию ===
     df['Имя сотрудника'] = df['Имя сотрудника'].astype(str).str.strip().str.lower()
     df['Дата'] = df['Дата'].astype(str).str.strip()
-    df['Дата'] = df['Дата'].apply(lambda x: x.zfill(5) if '.' in x else x)
-
-def normalize_date(d):
-    try:
-        parts = d.strip().split(".")
-        if len(parts) == 2:
-            day, month = parts
-            return f"{int(day):02d}.{int(month):02d}"
-        else:
-            return d
-    except:
-        return d  # если что-то пойдёт не так — оставим как есть
-
-    df['Дата'] = df['Дата'].astype(str).apply(normalize_date)
-
-
+    df['Дата'] = df['Дата'].apply(normalize_date)
 
     name_normalized = name.strip().lower()
     shifts = df[(df['Имя сотрудника'] == name_normalized) & (df['Дата'].isin(week_dates))]
-
-
 
     # 🔍 Отладочные принты
     print("👤 Имя из staff_data:", repr(name))
     print("🧾 Все имена из графика:", df['Имя сотрудника'].unique())
     print("📆 Неделя:", week_dates)
     print("🔎 Совпавшие смены:", shifts)
-
 
     # Ответ пользователю
     if shifts.empty:
@@ -266,6 +256,7 @@ def normalize_date(d):
         for _, row in shifts.iterrows():
             text += f"📆 {row['Дата']} — {row['Заведение']}, {row['Должность']} ({row['Время смены']})\n"
         bot.send_message(message.chat.id, text)
+
 
 
 # === Общее расписание (картинка) ===
